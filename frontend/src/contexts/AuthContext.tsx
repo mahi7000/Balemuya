@@ -75,16 +75,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('accessToken');
-      if (token) {
-        try {
-          const response = await apiClient.users.getProfile();
-          dispatch({ type: 'SET_USER', payload: response.data.data });
-        } catch (error) {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          dispatch({ type: 'SET_LOADING', payload: false });
+      
+      if (!token) {
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return;
+      }
+
+      try {
+        const response = await apiClient.users.getProfile();
+        dispatch({ type: 'SET_USER', payload: response.data.data });
+      } catch (error: any) {
+        console.error('Auth check failed:', error);
+        
+        // Clear invalid tokens
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        
+        // Don't show error toast for initial auth check
+        if (error.response?.status !== 401) {
+          toast.error('Session expired. Please login again.');
         }
-      } else {
+      } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
@@ -98,15 +109,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       dispatch({ type: 'CLEAR_ERROR' });
 
       const response = await apiClient.auth.login(data);
-      const { user, accessToken, refreshToken } = response.data.data!;
+      
+      if (!response.data.data) {
+        throw new Error('No data received from server');
+      }
+
+      const { user, accessToken, refreshToken } = response.data.data;
+
+      // Validate required fields
+      if (!accessToken || !user) {
+        throw new Error('Invalid response from server');
+      }
 
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
 
       dispatch({ type: 'SET_USER', payload: user });
       toast.success('Welcome back!');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
+      // Clear tokens on login failure
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Login failed. Please try again.';
+      
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       toast.error(errorMessage);
       throw error;
@@ -119,15 +149,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       dispatch({ type: 'CLEAR_ERROR' });
 
       const response = await apiClient.auth.register(data);
-      const { user, accessToken, refreshToken } = response.data.data!;
+      
+      if (!response.data.data) {
+        throw new Error('No data received from server');
+      }
+
+      const { user, accessToken, refreshToken } = response.data.data;
+
+      // Validate required fields
+      if (!accessToken || !user) {
+        throw new Error('Invalid response from server');
+      }
 
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
 
       dispatch({ type: 'SET_USER', payload: user });
       toast.success('Account created successfully!');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
+      // Clear tokens on registration failure
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Registration failed. Please try again.';
+      
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       toast.error(errorMessage);
       throw error;

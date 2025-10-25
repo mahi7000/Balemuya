@@ -33,7 +33,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Don't retry for auth endpoints or if already retried
+    if (error.response?.status === 401 && 
+        !originalRequest._retry &&
+        !originalRequest.url?.includes('/auth/')) {
+      
       originalRequest._retry = true;
 
       try {
@@ -51,21 +55,37 @@ api.interceptors.response.use(
           return api(originalRequest);
         } else {
           // No refresh token, redirect to login
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
+          handleLogout();
         }
       } catch (refreshError) {
         // Refresh failed, redirect to login
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        handleLogout();
       }
     }
 
     return Promise.reject(error);
   }
 );
+
+// Helper function to handle logout
+const handleLogout = () => {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  
+  // Only redirect if we're not already on a login page
+  if (!window.location.pathname.includes('/login')) {
+    window.location.href = '/login';
+  }
+};
+
+// Create separate instance for auth endpoints (no interceptors)
+const authApi: AxiosInstance = axios.create({
+  baseURL: (import.meta as any).env?.VITE_API_URL || 'https://balemuya-2.onrender.com/api',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 // API methods
 export const apiClient = {
