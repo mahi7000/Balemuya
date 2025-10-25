@@ -1,10 +1,130 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss";
 
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700&display=swap');
+
+/* Theme configuration */
+@theme {
+  /* Colors */
+  --color-primary-50: #f5f3f7;
+  --color-primary-100: #ebe6f0;
+  --color-primary-200: #d6cce1;
+  --color-primary-300: #b8a6c7;
+  --color-primary-400: #9a7fad;
+  --color-primary-500: #76459b;
+  --color-primary-600: #6a3d8a;
+  --color-primary-700: #5e3579;
+  --color-primary-800: #522d68;
+  --color-primary-900: #462557;
+
+  --color-secondary-50: #f8f7f9;
+  --color-secondary-100: #f1eff3;
+  --color-secondary-200: #e3dfe7;
+  --color-secondary-300: #d0c9d5;
+  --color-secondary-400: #b8aebf;
+  --color-secondary-500: #9d8fa9;
+  --color-secondary-600: #8a7a96;
+  --color-secondary-700: #756680;
+  --color-secondary-800: #62546a;
+  --color-secondary-900: #4f4354;
+
+  --color-accent-50: #faf9fb;
+  --color-accent-100: #f5f3f7;
+  --color-accent-200: #ebe6f0;
+  --color-accent-300: #d6cce1;
+  --color-accent-400: #b8a6c7;
+  --color-accent-500: #9a7fad;
+  --color-accent-600: #8a6f9a;
+  --color-accent-700: #7a5f87;
+  --color-accent-800: #6a4f74;
+  --color-accent-900: #5a3f61;
+
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+
+  /* Font families */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Playfair Display', serif;
+  --font-ethiopian: 'Noto Sans Ethiopic', system-ui, sans-serif;
+
+  /* Background images */
+  --bg-image-tilet-pattern: 
+    radial-gradient(circle at 25% 25%, rgba(118, 69, 155, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(118, 69, 155, 0.1) 0%, transparent 50%),
+    linear-gradient(45deg, rgba(118, 69, 155, 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(118, 69, 155, 0.05) 25%, transparent 25%);
+  
+  --bg-image-tilet-subtle: 
+    linear-gradient(135deg, rgba(118, 69, 155, 0.03) 0%, rgba(118, 69, 155, 0.08) 100%);
+  
+  --bg-image-tilet-border: 
+    linear-gradient(90deg, transparent 0%, rgba(118, 69, 155, 0.2) 50%, transparent 100%);
+
+  /* Animations */
+  --animate-fade-in: fadeIn 0.5s ease-in-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+  --animate-slide-down: slideDown 0.3s ease-out;
+  --animate-scale-in: scaleIn 0.2s ease-out;
+  --animate-pulse-soft: pulseSoft 2s ease-in-out infinite;
+
+  /* Box shadows */
+  --shadow-tilet: 0 4px 6px -1px rgba(118, 69, 155, 0.1), 0 2px 4px -1px rgba(118, 69, 155, 0.06);
+  --shadow-tilet-lg: 0 10px 15px -3px rgba(118, 69, 155, 0.1), 0 4px 6px -2px rgba(118, 69, 155, 0.05);
+  --shadow-tilet-xl: 0 20px 25px -5px rgba(118, 69, 155, 0.1), 0 10px 10px -5px rgba(118, 69, 155, 0.04);
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
 
 /* Base styles */
 * {
@@ -46,94 +166,147 @@ body {
 
 /* Tilet pattern utilities */
 .tilet-pattern {
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(118, 69, 155, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(118, 69, 155, 0.1) 0%, transparent 50%),
-    linear-gradient(45deg, rgba(118, 69, 155, 0.05) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(118, 69, 155, 0.05) 25%, transparent 25%);
+  background-image: var(--bg-image-tilet-pattern);
 }
 
 .tilet-subtle {
-  background: linear-gradient(135deg, rgba(118, 69, 155, 0.03) 0%, rgba(118, 69, 155, 0.08) 100%);
+  background-image: var(--bg-image-tilet-subtle);
 }
 
 .tilet-border {
-  background: linear-gradient(90deg, transparent 0%, rgba(118, 69, 155, 0.2) 50%, transparent 100%);
+  background-image: var(--bg-image-tilet-border);
 }
 
 /* Typography */
 .text-ethiopian {
-  font-family: 'Noto Sans Ethiopic', system-ui, sans-serif;
+  font-family: var(--font-ethiopian);
 }
 
 .text-display {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-display);
 }
 
 /* Custom components */
 .btn-primary {
-  @apply bg-primary-500 hover:bg-primary-600 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-tilet;
+  background-color: var(--color-primary-500);
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-tilet);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-600);
 }
 
 .btn-secondary {
-  @apply bg-white hover:bg-neutral-50 text-primary-500 border border-primary-200 font-medium px-6 py-3 rounded-lg transition-all duration-200;
+  background-color: white;
+  color: var(--color-primary-500);
+  border: 1px solid var(--color-primary-200);
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-neutral-50);
 }
 
 .btn-outline {
-  @apply border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white font-medium px-6 py-3 rounded-lg transition-all duration-200;
+  border: 2px solid var(--color-primary-500);
+  color: var(--color-primary-500);
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary-500);
+  color: white;
 }
 
 .card {
-  @apply bg-white rounded-xl shadow-tilet border border-neutral-200 p-6;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-tilet);
+  border: 1px solid var(--color-neutral-200);
+  padding: 1.5rem;
 }
 
 .card-hover {
-  @apply card hover:shadow-tilet-lg transition-all duration-300 hover:-translate-y-1;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-tilet);
+  border: 1px solid var(--color-neutral-200);
+  padding: 1.5rem;
+  transition: all 0.3s;
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-tilet-lg);
+  transform: translateY(-0.25rem);
 }
 
 .input-field {
-  @apply w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 0.5rem;
+  transition: all 0.2s;
 }
 
 .input-field:focus {
-  @apply outline-none;
+  outline: none;
+  ring: 2px;
+  ring-color: var(--color-primary-500);
+  border-color: transparent;
 }
 
 /* Animations */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: var(--animate-fade-in);
 }
 
 .animate-slide-up {
-  animation: slideUp 0.3s ease-out;
+  animation: var(--animate-slide-up);
 }
 
 .animate-slide-down {
-  animation: slideDown 0.3s ease-out;
+  animation: var(--animate-slide-down);
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.2s ease-out;
+  animation: var(--animate-scale-in);
 }
 
 .animate-pulse-soft {
-  animation: pulseSoft 2s ease-in-out infinite;
+  animation: var(--animate-pulse-soft);
 }
 
 /* Loading states */
 .loading-skeleton {
-  @apply bg-neutral-200 animate-pulse rounded;
+  background-color: var(--color-neutral-200);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-radius: 0.25rem;
 }
 
 /* Focus states */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+.focus-ring:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--color-primary-500);
+  ring-offset: 2px;
 }
 
 /* Responsive utilities */
 @media (max-width: 640px) {
   .container {
-    @apply px-4;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 
@@ -142,4 +315,24 @@ body {
   .no-print {
     display: none !important;
   }
+}
+
+/* Utility classes for forms and typography (replacing the plugins) */
+.prose {
+  max-width: none;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-family: var(--font-display);
+  color: var(--color-primary-900);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus,
+.form-multiselect:focus {
+  border-color: var(--color-primary-500);
+  ring: 2px;
+  ring-color: var(--color-primary-500);
+  ring-opacity: 0.5;
 }

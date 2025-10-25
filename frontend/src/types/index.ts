@@ -6,8 +6,8 @@ export interface User {
   lastName: string;
   phone?: string;
   avatar?: string;
-  role: UserRole;
-  status: UserStatus;
+  role: string;
+  status: string;
   isVerified: boolean;
   emailVerifiedAt?: string;
   lastLoginAt?: string;
@@ -17,31 +17,11 @@ export interface User {
   // Seller specific fields
   storeName?: string;
   bio?: string;
-  kycStatus: KYCStatus;
+  kycStatus: string;
   kycSubmittedAt?: string;
   kycApprovedAt?: string;
   isPremiumSeller: boolean;
   premiumExpiresAt?: string;
-}
-
-export enum UserRole {
-  BUYER = 'BUYER',
-  SELLER = 'SELLER',
-  ADMIN = 'ADMIN',
-  DELIVERY_PARTNER = 'DELIVERY_PARTNER'
-}
-
-export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  SUSPENDED = 'SUSPENDED',
-  PENDING_VERIFICATION = 'PENDING_VERIFICATION'
-}
-
-export enum KYCStatus {
-  PENDING = 'PENDING',
-  UNDER_REVIEW = 'UNDER_REVIEW',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED'
 }
 
 // Product types
@@ -63,7 +43,7 @@ export interface Product {
   video?: string;
   tags: string[];
   specifications?: any;
-  status: ProductStatus;
+  status: string;
   isPublished: boolean;
   isFeatured: boolean;
   averageRating?: number;
@@ -77,12 +57,6 @@ export interface Product {
   categoryId: string;
   seller: User;
   category: Category;
-}
-
-export enum ProductStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED'
 }
 
 // Category types
@@ -106,15 +80,15 @@ export interface Category {
 export interface Order {
   id: string;
   orderNumber: string;
-  status: OrderStatus;
-  paymentStatus: PaymentStatus;
-  deliveryStatus: DeliveryStatus;
+  status: string;
+  paymentStatus: string;
+  deliveryStatus: string;
   subtotal: number;
   shipping: number;
   tax: number;
   discount: number;
   total: number;
-  deliveryOption: DeliveryOption;
+  deliveryOption: string;
   trackingNumber?: string;
   deliveryAddress?: any;
   deliveryNotes?: string;
@@ -139,46 +113,6 @@ export interface Order {
   reviews: Review[];
 }
 
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
-  PROCESSING = 'PROCESSING',
-  SHIPPED = 'SHIPPED',
-  DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED'
-}
-
-export enum PaymentStatus {
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  REFUNDED = 'REFUNDED',
-  CANCELLED = 'CANCELLED'
-}
-
-export enum DeliveryStatus {
-  PENDING = 'PENDING',
-  ASSIGNED = 'ASSIGNED',
-  PICKED_UP = 'PICKED_UP',
-  IN_TRANSIT = 'IN_TRANSIT',
-  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
-  DELIVERED = 'DELIVERED',
-  FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED'
-}
-
-export enum DeliveryOption {
-  SELLER_DELIVERY = 'SELLER_DELIVERY',
-  BUYER_PICKUP = 'BUYER_PICKUP',
-  SPLIT_DELIVERY = 'SPLIT_DELIVERY',
-  PLATFORM_DELIVERY = 'PLATFORM_DELIVERY',
-  SELLER_RESPONSIBLE = 'SELLER_RESPONSIBLE',
-  BUYER_RESPONSIBLE = 'BUYER_RESPONSIBLE',
-  SPLIT_RESPONSIBILITY = 'SPLIT_RESPONSIBILITY'
-}
-
 // Order Item types
 export interface OrderItem {
   id: string;
@@ -200,8 +134,8 @@ export interface Payment {
   userId: string;
   amount: number;
   currency: string;
-  status: PaymentStatus;
-  paymentMethod: PaymentMethod;
+  status: string;
+  paymentMethod: string;
   transactionId?: string;
   gatewayResponse?: any;
   failureReason?: string;
@@ -210,13 +144,6 @@ export interface Payment {
   
   order: Order;
   user: User;
-}
-
-export enum PaymentMethod {
-  CHAPA = 'CHAPA',
-  CBE_BIRR = 'CBE_BIRR',
-  STRIPE = 'STRIPE',
-  CASH_ON_DELIVERY = 'CASH_ON_DELIVERY'
 }
 
 // Review types
@@ -243,7 +170,7 @@ export interface Review {
 export interface Address {
   id: string;
   userId: string;
-  type: AddressType;
+  type: string;
   firstName: string;
   lastName: string;
   phone: string;
@@ -260,11 +187,6 @@ export interface Address {
   orders: Order[];
 }
 
-export enum AddressType {
-  SHIPPING = 'SHIPPING',
-  BILLING = 'BILLING'
-}
-
 // Wishlist types
 export interface WishlistItem {
   id: string;
@@ -279,7 +201,7 @@ export interface WishlistItem {
 // Chat types
 export interface Chat {
   id: string;
-  status: ChatStatus;
+  status: string;
   lastMessage?: string;
   lastMessageAt?: string;
   createdAt: string;
@@ -292,12 +214,6 @@ export interface Chat {
   messages: Message[];
 }
 
-export enum ChatStatus {
-  ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED',
-  BLOCKED = 'BLOCKED'
-}
-
 // Message types
 export interface Message {
   id: string;
@@ -305,7 +221,7 @@ export interface Message {
   senderId: string;
   receiverId: string;
   content: string;
-  type: MessageType;
+  type: string;
   isRead: boolean;
   readAt?: string;
   createdAt: string;
@@ -313,13 +229,6 @@ export interface Message {
   chat: Chat;
   sender: User;
   receiver: User;
-}
-
-export enum MessageType {
-  TEXT = 'TEXT',
-  IMAGE = 'IMAGE',
-  SYSTEM = 'SYSTEM',
-  ORDER_UPDATE = 'ORDER_UPDATE'
 }
 
 // Notification types
@@ -367,7 +276,7 @@ export interface RegisterForm {
   firstName: string;
   lastName: string;
   phone?: string;
-  role: UserRole;
+  role: string;
   agreeToTerms: boolean;
 }
 

@@ -1,9 +1,10 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { ApiResponse, PaginatedResponse } from '../types';
+import axios from 'axios';
+import type { AxiosInstance, AxiosResponse } from 'axios';
+import type { ApiResponse, PaginatedResponse } from '../types';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

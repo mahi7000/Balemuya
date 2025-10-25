@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { User, LoginForm, RegisterForm } from '../types';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import type { User, LoginForm, RegisterForm } from '../types';
 import { apiClient } from '../lib/api';
 import toast from 'react-hot-toast';
 

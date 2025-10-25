@@ -1,11 +1,11 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserRole } from '../../types';
+// Remove UserRole import since we're using strings now
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: UserRole[];
+  allowedRoles?: string[];
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
@@ -29,20 +29,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Check role-based access
-  if (allowedRoles.length > 0 && user && !allowedRoles.includes(user.role)) {
-    // Redirect to appropriate dashboard based on user role
-    switch (user.role) {
-      case UserRole.BUYER:
-        return <Navigate to="/dashboard" replace />;
-      case UserRole.SELLER:
-        return <Navigate to="/seller" replace />;
-      case UserRole.ADMIN:
-        return <Navigate to="/admin" replace />;
-      default:
-        return <Navigate to="/dashboard" replace />;
+    // Check role-based access
+    if (allowedRoles.length > 0 && user && !allowedRoles.includes(user.role)) {
+      // Redirect to appropriate dashboard based on user role
+      switch (user.role) {
+        case 'BUYER':
+          return <Navigate to="/dashboard" replace />;
+        case 'SELLER':
+          return <Navigate to="/seller" replace />;
+        case 'ADMIN':
+          return <Navigate to="/admin" replace />;
+        default:
+          return <Navigate to="/dashboard" replace />;
+      }
     }
-  }
 
   return <>{children}</>;
 };

@@ -5,7 +5,7 @@ import {
   HeartIcon, 
   ClockIcon,
   StarIcon,
-  TrendingUpIcon,
+  ChartBarIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
 
@@ -144,7 +144,7 @@ const BuyerDashboard: React.FC = () => {
                   to="/products"
                   className="flex items-center p-3 text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
                 >
-                  <TrendingUpIcon className="h-5 w-5 mr-3 text-primary-600" />
+                  <ChartBarIcon className="h-5 w-5 mr-3 text-primary-600" />
                   Browse Products
                 </Link>
                 <Link

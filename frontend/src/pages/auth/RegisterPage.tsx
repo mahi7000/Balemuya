@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserRole } from '../../types';
+// Remove UserRole import since we're using strings now
 import { Button } from '../../components/ui/Button';
 import { EyeIcon, EyeSlashIcon, UserIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 
@@ -15,7 +15,7 @@ const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   phone: z.string().optional(),
-  role: z.nativeEnum(UserRole),
+  role: z.string(),
   agreeToTerms: z.boolean().refine(val => val === true, 'You must agree to the terms and conditions'),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -27,7 +27,7 @@ type RegisterForm = z.infer<typeof registerSchema>;
 const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.BUYER);
+  const [selectedRole, setSelectedRole] = useState<string>('BUYER');
   const { register: registerUser, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -40,7 +40,7 @@ const RegisterPage: React.FC = () => {
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      role: UserRole.BUYER,
+      role: 'BUYER',
       agreeToTerms: false,
     },
   });
@@ -54,7 +54,7 @@ const RegisterPage: React.FC = () => {
     }
   };
 
-  const handleRoleChange = (role: UserRole) => {
+  const handleRoleChange = (role: string) => {
     setSelectedRole(role);
     setValue('role', role);
   };
@@ -81,30 +81,30 @@ const RegisterPage: React.FC = () => {
               I want to:
             </label>
             <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleRoleChange(UserRole.BUYER)}
-                className={`p-3 rounded-lg border-2 transition-all ${
-                  selectedRole === UserRole.BUYER
-                    ? 'border-primary-500 bg-primary-50'
-                    : 'border-neutral-300 hover:border-neutral-400'
-                }`}
-              >
-                <ShoppingBagIcon className="h-6 w-6 mx-auto mb-2 text-primary-600" />
-                <div className="text-sm font-medium">Buy Products</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleChange(UserRole.SELLER)}
-                className={`p-3 rounded-lg border-2 transition-all ${
-                  selectedRole === UserRole.SELLER
-                    ? 'border-primary-500 bg-primary-50'
-                    : 'border-neutral-300 hover:border-neutral-400'
-                }`}
-              >
-                <UserIcon className="h-6 w-6 mx-auto mb-2 text-primary-600" />
-                <div className="text-sm font-medium">Sell Products</div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleRoleChange('BUYER')}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    selectedRole === 'BUYER'
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-neutral-300 hover:border-neutral-400'
+                  }`}
+                >
+                  <ShoppingBagIcon className="h-6 w-6 mx-auto mb-2 text-primary-600" />
+                  <div className="text-sm font-medium">Buy Products</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRoleChange('SELLER')}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    selectedRole === 'SELLER'
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-neutral-300 hover:border-neutral-400'
+                  }`}
+                >
+                  <UserIcon className="h-6 w-6 mx-auto mb-2 text-primary-600" />
+                  <div className="text-sm font-medium">Sell Products</div>
+                </button>
             </div>
           </div>
 
