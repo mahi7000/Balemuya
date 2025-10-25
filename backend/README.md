@@ -1,6 +1,6 @@
 # Balmuya Backend API
 
-A comprehensive Node.js backend API for Balmuya - a marketplace platform empowering women entrepreneurs in Ethiopia.
+A comprehensive Node backend API for Balmuya - a marketplace platform empowering women entrepreneurs in Ethiopia.
 
 ## 🚀 Features
 
