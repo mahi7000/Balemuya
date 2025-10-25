@@ -10,7 +10,7 @@ const config = require('./config') || {
   port: process.env.PORT || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: ['http://localhost:5173', 'https://balemuya-pi.vercel.app'],
     credentials: true
   },
   rateLimit: {
