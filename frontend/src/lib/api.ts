@@ -43,7 +43,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
-          const response = await api.post('/auth/refresh', {
+          const response = await authApi.post('/auth/refresh', {
             refreshToken,
           });
 
@@ -92,22 +92,22 @@ export const apiClient = {
   // Auth endpoints
   auth: {
     login: (data: { email: string; password: string }) =>
-      api.post<ApiResponse<{ user: any; accessToken: string; refreshToken: string }>>('/auth/login', data),
+      authApi.post<ApiResponse<{ user: any; accessToken: string; refreshToken: string }>>('/auth/login', data),
     
     register: (data: any) =>
-      api.post<ApiResponse<{ user: any; accessToken: string; refreshToken: string }>>('/auth/register', data),
+      authApi.post<ApiResponse<{ user: any; accessToken: string; refreshToken: string }>>('/auth/register', data),
     
     forgotPassword: (data: { email: string }) =>
-      api.post<ApiResponse<null>>('/auth/forgot-password', data),
+      authApi.post<ApiResponse<null>>('/auth/forgot-password', data),
     
     resetPassword: (data: { token: string; password: string }) =>
-      api.post<ApiResponse<null>>('/auth/reset-password', data),
+      authApi.post<ApiResponse<null>>('/auth/reset-password', data),
     
     verifyEmail: (data: { token: string }) =>
-      api.post<ApiResponse<null>>('/auth/verify-email', data),
+      authApi.post<ApiResponse<null>>('/auth/verify-email', data),
     
     refreshToken: (data: { refreshToken: string }) =>
-      api.post<ApiResponse<{ accessToken: string }>>('/auth/refresh', data),
+      authApi.post<ApiResponse<{ accessToken: string }>>('/auth/refresh', data),
   },
 
   // User endpoints
