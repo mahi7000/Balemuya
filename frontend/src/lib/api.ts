@@ -4,7 +4,7 @@ import type { ApiResponse, PaginatedResponse } from '../types';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: (import.meta as any).env?.VITE_API_URL || 'https://balemuya-2.onrender.com/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -49,6 +49,11 @@ api.interceptors.response.use(
           // Retry the original request
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
+        } else {
+          // No refresh token, redirect to login
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
         }
       } catch (refreshError) {
         // Refresh failed, redirect to login
