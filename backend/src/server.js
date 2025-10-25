@@ -85,7 +85,7 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: config.cors?.origin || process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: config.cors?.origin || process.env.FRONTEND_URL || 'https://balemuya-pi.vercel.app/',
   credentials: config.cors?.credentials || true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
