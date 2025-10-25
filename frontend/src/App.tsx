@@ -24,6 +24,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import MainLayout from './components/layout/MainLayout';
 import AuthLayout from './components/layout/AuthLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AddProduct from './pages/products/AddProductPage';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -89,6 +90,11 @@ function App() {
                 <Route path="seller" element={
                   <ProtectedRoute allowedRoles={['SELLER']}>
                     <SellerDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="seller" element={
+                  <ProtectedRoute allowedRoles={['SELLER']}>
+                    <AddProduct />
                   </ProtectedRoute>
                 } />
                 
