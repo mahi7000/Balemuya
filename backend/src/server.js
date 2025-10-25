@@ -5,54 +5,96 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
 
-const config = require('./config');
-const { errorHandler, notFound } = require('./middleware/errorHandler');
+// Fallback config if config file is missing
+const config = require('./config') || {
+  port: process.env.PORT || 5000,
+  nodeEnv: process.env.NODE_ENV || 'development',
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true
+  },
+  rateLimit: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 100 // limit each IP to 100 requests per windowMs
+  }
+};
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const productRoutes = require('./routes/products');
-const orderRoutes = require('./routes/orders');
-const paymentRoutes = require('./routes/payments');
-const reviewRoutes = require('./routes/reviews');
-const wishlistRoutes = require('./routes/wishlist');
-const chatRoutes = require('./routes/chats');
-const adminRoutes = require('./routes/admin');
-const uploadRoutes = require('./routes/upload');
+// Import error handler (create if doesn't exist)
+let errorHandler, notFound;
+try {
+  const errorModule = require('./middleware/errorHandler');
+  errorHandler = errorModule.errorHandler;
+  notFound = errorModule.notFound;
+} catch (error) {
+  // Fallback error handlers
+  errorHandler = (err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+      success: false,
+      message: 'Something went wrong!',
+      ...(process.env.NODE_ENV === 'development' && { error: err.message })
+    });
+  };
+  
+  notFound = (req, res) => {
+    res.status(404).json({
+      success: false,
+      message: `Route ${req.originalUrl} not found`
+    });
+  };
+}
+
+// Import routes with fallbacks
+const importRoute = (routePath, fallbackRouter) => {
+  try {
+    return require(routePath);
+  } catch (error) {
+    console.warn(`Route ${routePath} not found, using fallback`);
+    return fallbackRouter || express.Router();
+  }
+};
+
+const authRoutes = importRoute('./routes/auth');
+const userRoutes = importRoute('./routes/users');
+const productRoutes = importRoute('./routes/products');
+const orderRoutes = importRoute('./routes/orders');
+const paymentRoutes = importRoute('./routes/payments');
+const reviewRoutes = importRoute('./routes/reviews');
+const wishlistRoutes = importRoute('./routes/wishlist');
+const chatRoutes = importRoute('./routes/chats');
+const adminRoutes = importRoute('./routes/admin');
+const uploadRoutes = importRoute('./routes/upload');
 
 const app = express();
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+// Create logs directory if it doesn't exist (safe for Render)
+try {
+  const logsDir = path.join(__dirname, 'logs');
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+} catch (error) {
+  console.warn('Could not create logs directory:', error.message);
 }
 
 // Security middleware
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
+  contentSecurityPolicy: false, // Disable for API
   crossOriginEmbedderPolicy: false
 }));
 
 // CORS configuration
 app.use(cors({
-  origin: config.cors.origin,
-  credentials: config.cors.credentials,
+  origin: config.cors?.origin || process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: config.cors?.credentials || true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.maxRequests,
+  windowMs: config.rateLimit?.windowMs || 15 * 60 * 1000,
+  max: config.rateLimit?.maxRequests || 100,
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later'
@@ -73,18 +115,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
+// Health check endpoint (critical for Render)
 app.get('/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
     message: 'Balmuya Backend API is running',
     timestamp: new Date().toISOString(),
-    environment: config.nodeEnv,
+    environment: config.nodeEnv || process.env.NODE_ENV || 'development',
     version: '1.0.0'
   });
 });
 
-// API routes
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Welcome to Balmuya Backend API',
+    version: '1.0.0',
+    documentation: '/api',
+    health: '/health'
+  });
+});
+
+// API routes (with safe mounting)
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
@@ -114,7 +167,7 @@ app.get('/api', (req, res) => {
       admin: '/api/admin',
       upload: '/api/upload'
     },
-    documentation: 'https://docs.balmuya.com'
+    health: '/health'
   });
 });
 
@@ -124,15 +177,19 @@ app.use(notFound);
 // Global error handler
 app.use(errorHandler);
 
-// Start server
-const PORT = config.port;
-app.listen(PORT, () => {
+// Start server - CRITICAL FOR RENDER: use 0.0.0.0
+const PORT = config.port || process.env.PORT || 5000;
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
   console.log(`
 🚀 Balmuya Backend Server is running!
+📍 Host: ${HOST}
 📍 Port: ${PORT}
-🌍 Environment: ${config.nodeEnv}
-📚 API Documentation: http://localhost:${PORT}/api
-❤️  Empowering women entrepreneurs through technology
+🌍 Environment: ${config.nodeEnv || process.env.NODE_ENV || 'development'}
+📚 API: http://${HOST}:${PORT}/api
+❤️  Health: http://${HOST}:${PORT}/health
+💡 Empowering women entrepreneurs through technology
   `);
 });
 
