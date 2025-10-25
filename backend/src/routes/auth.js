@@ -5,6 +5,7 @@ const prisma = require('../config/database');
 const { generateTokenPair, generateEmailVerificationToken, generatePasswordResetToken, verifyAccessToken } = require('../utils/jwt');
 const { sendEmailVerification, sendPasswordReset, sendWelcomeEmail } = require('../utils/email');
 const { authenticateToken } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
@@ -13,66 +14,6 @@ const router = express.Router();
  * @desc    Register a new user
  * @access  Public
  */
-
-// Add this route for token refresh
-router.post('/refresh', async (req, res, next) => {
-  try {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return res.status(400).json({
-        success: false,
-        message: 'Refresh token is required'
-      });
-    }
-
-    // Verify refresh token
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        status: true
-      }
-    });
-
-    if (!user || user.status !== 'ACTIVE') {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid refresh token'
-      });
-    }
-
-    // Generate new access token
-    const newAccessToken = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
-        role: user.role 
-      },
-      process.env.JWT_ACCESS_SECRET,
-      { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' }
-    );
-
-    res.json({
-      success: true,
-      data: {
-        accessToken: newAccessToken
-      }
-    });
-
-  } catch (error) {
-    console.error('Token refresh error:', error);
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid refresh token'
-    });
-  }
-});
 
 router.post('/register', async (req, res) => {
   try {
@@ -149,6 +90,8 @@ router.post('/register', async (req, res) => {
       }
     });
 
+    const tokens = generateTokenPair(user);
+
     // Generate email verification token
     const verificationToken = generateEmailVerificationToken({ userId: user.id, email });
 
@@ -163,7 +106,11 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Registration successful. Please verify your email.',
-      data: user
+      data: {
+        user: user,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken 
+      }
     });
 
   } catch (error) {
@@ -252,7 +199,8 @@ router.post('/login', async (req, res) => {
       message: 'Login successful',
       data: {
         user: userWithoutPassword,
-        tokens
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken
       }
     });
 
