@@ -1,0 +1,145 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;500;600;700&display=swap');
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.6;
+  color: #404040;
+  background-color: #fafafa;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #76459b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6a3d8a;
+}
+
+/* Tilet pattern utilities */
+.tilet-pattern {
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(118, 69, 155, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(118, 69, 155, 0.1) 0%, transparent 50%),
+    linear-gradient(45deg, rgba(118, 69, 155, 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(118, 69, 155, 0.05) 25%, transparent 25%);
+}
+
+.tilet-subtle {
+  background: linear-gradient(135deg, rgba(118, 69, 155, 0.03) 0%, rgba(118, 69, 155, 0.08) 100%);
+}
+
+.tilet-border {
+  background: linear-gradient(90deg, transparent 0%, rgba(118, 69, 155, 0.2) 50%, transparent 100%);
+}
+
+/* Typography */
+.text-ethiopian {
+  font-family: 'Noto Sans Ethiopic', system-ui, sans-serif;
+}
+
+.text-display {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Custom components */
+.btn-primary {
+  @apply bg-primary-500 hover:bg-primary-600 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-tilet;
+}
+
+.btn-secondary {
+  @apply bg-white hover:bg-neutral-50 text-primary-500 border border-primary-200 font-medium px-6 py-3 rounded-lg transition-all duration-200;
+}
+
+.btn-outline {
+  @apply border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white font-medium px-6 py-3 rounded-lg transition-all duration-200;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-tilet border border-neutral-200 p-6;
+}
+
+.card-hover {
+  @apply card hover:shadow-tilet-lg transition-all duration-300 hover:-translate-y-1;
+}
+
+.input-field {
+  @apply w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+}
+
+.input-field:focus {
+  @apply outline-none;
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.animate-pulse-soft {
+  animation: pulseSoft 2s ease-in-out infinite;
+}
+
+/* Loading states */
+.loading-skeleton {
+  @apply bg-neutral-200 animate-pulse rounded;
+}
+
+/* Focus states */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
