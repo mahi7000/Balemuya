@@ -1,0 +1,540 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  BUYER
+  SELLER
+  ADMIN
+  DELIVERY_PARTNER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum KYCStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CHAPA
+  CBE_BIRR
+  STRIPE
+  CASH_ON_DELIVERY
+}
+
+enum DeliveryOption {
+  SELLER_DELIVERY
+  BUYER_PICKUP
+  SPLIT_DELIVERY
+  PLATFORM_DELIVERY
+  SELLER_RESPONSIBLE
+  BUYER_RESPONSIBLE
+  SPLIT_RESPONSIBILITY
+}
+
+enum ChatStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
+}
+
+model User {
+  id                String      @id @default(cuid())
+  email             String      @unique
+  password          String
+  firstName         String
+  lastName          String
+  phone             String?
+  avatar            String?
+  role              UserRole    @default(BUYER)
+  status            UserStatus  @default(ACTIVE)
+  isVerified        Boolean     @default(false)
+  emailVerifiedAt   DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Seller specific fields
+  storeName         String?     @unique
+  bio               String?
+  kycStatus         KYCStatus   @default(PENDING)
+  kycSubmittedAt    DateTime?
+  kycApprovedAt     DateTime?
+  isPremiumSeller   Boolean     @default(false)
+  premiumExpiresAt  DateTime?
+
+  // KYC Documents
+  kycDocuments     KycDocument[]
+  
+  // Relations
+  products         Product[]
+  orders           Order[]      @relation("OrderBuyer")
+  sellerOrders     Order[]      @relation("OrderSeller")
+  reviews          Review[]
+  receivedReviews  Review[]     @relation("ReviewSeller")
+  wishlistItems    WishlistItem[]
+  sentMessages     Message[]    @relation("MessageSender")
+  receivedMessages Message[]    @relation("MessageReceiver")
+  chats            Chat[]       @relation("ChatParticipant1")
+  chats2           Chat[]       @relation("ChatParticipant2")
+  payments         Payment[]
+  addresses        Address[]
+  notifications    Notification[]
+  subscriptions    Subscription[]
+  deliveryPartner  DeliveryPartner?
+
+  @@map("users")
+
+  // Indexes for better performance
+  @@index([email])
+}
+
+model KycDocument {
+  id            String    @id @default(cuid())
+  userId        String
+  idCard        String?
+  selfieWithId  String?
+  proofOfAddress String?
+  personalInfo  Json?
+  status        KYCStatus @default(PENDING)
+  submittedAt   DateTime  @default(now())
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  rejectionReason String?
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("kyc_documents")
+}
+
+model Address {
+  id          String      @id @default(cuid())
+  userId      String
+  type        AddressType @default(SHIPPING)
+  firstName   String
+  lastName    String
+  phone       String
+  street      String
+  city        String
+  state       String
+  postalCode  String
+  country     String      @default("Ethiopia")
+  isDefault   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[]
+
+  @@map("addresses")
+
+  @@index([userId])
+  @@index([type])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  image       String?
+  parentId    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  parent      Category?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryParent")
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  title         String
+  description   String        @db.Text
+  price         Decimal       @db.Decimal(10, 2)
+  comparePrice  Decimal?      @db.Decimal(10, 2)
+  cost          Decimal?      @db.Decimal(10, 2)
+  quantity      Int           @default(0)
+  trackQuantity Boolean       @default(true)
+  allowBackorder Boolean      @default(false)
+  lowStockThreshold Int        @default(5)
+  sku           String?       @unique
+  weight        Decimal?      @db.Decimal(8, 2)
+  dimensions    Json?
+  images        String[]
+  video         String?
+  tags          String[]
+  specifications Json?
+  status        ProductStatus @default(DRAFT)
+  isPublished   Boolean       @default(false)
+  isFeatured    Boolean       @default(false)
+  averageRating Decimal?      @db.Decimal(3, 2)
+  reviewCount   Int           @default(0)
+  salesCount    Int           @default(0)
+  viewCount     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  sellerId      String
+  categoryId    String
+
+  seller        User          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category      Category      @relation(fields: [categoryId], references: [id])
+  orderItems    OrderItem[]
+  reviews       Review[]
+  wishlistItems WishlistItem[]
+
+  @@map("products")
+
+  // Indexes
+  @@index([sellerId])
+  @@index([categoryId])
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([price])
+  @@index([createdAt])
+  @@index([tags])
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  deliveryStatus  DeliveryStatus @default(PENDING)
+  subtotal        Decimal       @db.Decimal(10, 2)
+  shipping        Decimal       @db.Decimal(10, 2) @default(0)
+  tax             Decimal       @db.Decimal(10, 2) @default(0)
+  discount        Decimal       @db.Decimal(10, 2) @default(0)
+  total           Decimal       @db.Decimal(10, 2)
+  deliveryOption  DeliveryOption
+  trackingNumber  String?
+  deliveryAddress Json?
+  deliveryNotes   String?
+  notes           String?
+  cancelledAt     DateTime?
+  cancelledBy     String?
+  cancellationReason String?
+  paidAt          DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  buyerId         String
+  sellerId        String
+  shippingAddressId String
+
+  buyer           User          @relation("OrderBuyer", fields: [buyerId], references: [id])
+  seller          User          @relation("OrderSeller", fields: [sellerId], references: [id])
+  shippingAddress Address       @relation(fields: [shippingAddressId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+  reviews         Review[]
+  deliveryAssignments DeliveryAssignment[]
+
+  @@map("orders")
+
+  // Indexes
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String
+  userId          String
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("ETB")
+  paymentMethod   PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  transactionId   String?
+  paymentUrl      String?
+  paidAt          DateTime?
+  refundedAt      DateTime?
+  refundAmount    Decimal?      @db.Decimal(10, 2)
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id])
+
+  @@map("payments")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  orderId   String
+  userId    String
+  sellerId  String
+  rating    Int
+  comment   String?  @db.Text
+  images    String[]
+  isVerified Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order     Order    @relation(fields: [orderId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  seller    User     @relation("ReviewSeller", fields: [sellerId], references: [id])
+
+  @@unique([productId, userId])
+  @@map("reviews")
+
+  @@index([productId])
+  @@index([userId])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+model Chat {
+  id        String     @id @default(cuid())
+  status    ChatStatus @default(ACTIVE)
+  lastMessageAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  participant1Id String
+  participant2Id String
+
+  participant1 User      @relation("ChatParticipant1", fields: [participant1Id], references: [id])
+  participant2 User      @relation("ChatParticipant2", fields: [participant2Id], references: [id])
+  messages     Message[]
+
+  @@unique([participant1Id, participant2Id])
+  @@map("chats")
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  chatId    String
+  senderId  String
+  receiverId String
+  content   String      @db.Text
+  type      MessageType @default(TEXT)
+  isRead    Boolean     @default(false)
+  readAt    DateTime?
+  createdAt DateTime    @default(now())
+
+  chat      Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender    User        @relation("MessageSender", fields: [senderId], references: [id])
+  receiver  User        @relation("MessageReceiver", fields: [receiverId], references: [id])
+
+  @@map("messages")
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String   @db.Text
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model SystemSettings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  description String?
+
+  @@map("system_settings")
+}
+
+// New enums for enhanced functionality
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  SYSTEM
+  ORDER_UPDATE
+}
+
+enum PlanType {
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+
+
+
+
+
+
+
+
+// New models for enhanced functionality
+
+// Subscription/Plan Model
+model Subscription {
+  id          String             @id @default(cuid())
+  planType    PlanType           @default(BASIC)
+  status      SubscriptionStatus @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime
+  autoRenew   Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  @@map("subscriptions")
+
+  @@index([userId])
+  @@index([planType])
+  @@index([status])
+}
+
+// Delivery Partner Model
+model DeliveryPartner {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  isActive        Boolean  @default(true)
+  vehicleType     String
+  licensePlate    String?
+  rating          Decimal? @db.Decimal(3, 2) @default(0)
+  totalDeliveries Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries      DeliveryAssignment[]
+
+  @@map("delivery_partners")
+}
+
+// Delivery Assignment Model
+model DeliveryAssignment {
+  id                String         @id @default(cuid())
+  status            DeliveryStatus @default(PENDING)
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+  notes             String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  order             Order          @relation(fields: [orderId], references: [id])
+  orderId           String
+  partner           DeliveryPartner? @relation(fields: [partnerId], references: [id])
+  partnerId         String?
+
+  @@map("delivery_assignments")
+
+  @@index([orderId])
+  @@index([partnerId])
+  @@index([status])
+}
