@@ -84,12 +84,36 @@ app.use(helmet({
 }));
 
 // CORS configuration
-app.use(cors({
-  origin: config.cors?.origin || process.env.FRONTEND_URL || 'https://balemuya-pi.vercel.app',
-  credentials: config.cors?.credentials || true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'https://balemuya-pi.vercel.app',
+    'https://balemuya.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ];
+  
+  const origin = req.headers.origin;
+  
+  // Always set the origin header
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (origin) {
+    // For other origins, still allow but log it
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    console.log('CORS: Allowing non-listed origin:', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
 // Rate limiting
 const limiter = rateLimit({
