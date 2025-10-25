@@ -62,7 +62,9 @@ const config = {
   
   // CORS
   cors: {
-    origin: process.env.FRONTEND_URL || 'https://balemuya-pi.vercel.app',
+    origin: process.env.FRONTEND_URL ? 
+    process.env.FRONTEND_URL.split(',') : 
+    ['https://balemuya-pi.vercel.app', 'http://localhost:3000', 'http://localhost:5173'],
     credentials: true,
   },
 };
