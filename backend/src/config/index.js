@@ -62,7 +62,7 @@ const config = {
   
   // CORS
   cors: {
-    origin: process.env.FRONTEND_URL || 'https://balemuya-pi.vercel.app/',
+    origin: process.env.FRONTEND_URL || 'https://balemuya-pi.vercel.app',
     credentials: true,
   },
 };
